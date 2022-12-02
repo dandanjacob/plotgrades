@@ -22,14 +22,14 @@ for i in range(1, len(arq.sheetnames)):
             if(planilha.iloc[j, 0] == matricula_aluno): #if matricula_aluno is in the planilha
                 nome_materia.append(arq.sheetnames[i]); #add the name of the materia in the list
                 #for each avaliation in planilha
-                nota_final = 0;
-                soma_pesos = 0;
-                for k in range(2, (len(planilha.columns))): #for each avaliation in planilha
+            nota_final = 0;
+            soma_pesos = 0;
+            for k in range(2, (len(planilha.columns))): #for each avaliation in planilha
                     if (k % 2 == 0): 
                         soma_pesos += soma_pesos + planilha.iloc[j, k]; #sum the weights
                         nota_final = nota_final + planilha.iloc[j,k]*planilha.iloc[j,k+1]; #add the nota of the avaliation in the list
-                nota_materia.append(nota_final*10/soma_pesos); #add the nota of the materia in the list
-                break;
+            nota_materia.append(nota_final*10/soma_pesos); #add the nota of the materia in the list
+            break;
 ################################
  #We have the name of the materia and the nota of the materia,
  # so height of the bar and how many bar there is
@@ -40,10 +40,11 @@ for i in range(1, len(arq.sheetnames)):
 weights = [];
 planilha = pd.read_excel('planilhas.xlsx', sheet_name='Geral');
 for i in range(0, len(nome_materia)):
-    for j in range(0, len(planilha)-1):
+    for j in range(0, len(planilha)):
         if(planilha.iloc[j, 0] == nome_materia[i]):
             weights.append(planilha.iloc[j, 2]);
-            break;
+  
+
 
 #CR DO PERÍODO
 #media ponderada de weighs e nota_materia
@@ -58,11 +59,15 @@ media_ponderada = media_ponderada/sum(weights);
 
 #define space between bars
 space = [];
+acumulado = 0;
+space_around = 0.1;
 for i in range(0, len(weights)):
     if(i==0):
-        space.append(0.5*weights[i] + 0.5);
+        space.append(0.5*weights[i] + space_around);
+        acumulado = acumulado + weights[i] + space_around;
     else:
-        space.append(weights[i-1] + weights[i] + 0.5);
+        space.append(acumulado + weights[i]*0.5 + space_around);
+        acumulado = acumulado + weights[i]+ space_around;
 
 #PERÍODO
 #extracting numbers from a nome_materia
@@ -90,8 +95,9 @@ for i in range(0, len(nome_materia)):
     nome_materia[i] = nome_materia[i].replace(".", "");
 
 
-
-   
+print(weights);
+print(space);
+print(nota_materia);
 
 
 # plot a histogram
@@ -110,3 +116,4 @@ plt.text(0, 6, str(6), fontsize=6, color='b')
 plt.show()
 
 
+# 
