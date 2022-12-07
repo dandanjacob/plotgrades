@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
+from math import floor
 arq = openpyxl.load_workbook('planilhas.xlsx') 
 matricula_aluno = int(67106); #matricula do aluno
+
 #Estrutura do arquivo xlsx
 #Geral: Identificação | Professor | Período | Peso | Matéria
 #'Nome_d_matéria': Matrícula | Nome | Avaliação 1 | Peso A1 | Avaliação 2 | Peso A2...
@@ -26,6 +28,14 @@ matricula_aluno = int(67106); #matricula do aluno
 #                   'Avaliação1': (7.0, 2) //Tupla
 #                   'Avaliação2': (8.0, 2) //Tupla
 #                          }
+# }
+
+
+#Estrutura do CR: { //Dicionário
+# 'Acumulado': 7.0
+# 'Período2022.2': 7.0
+# 'Período2022.1': 7.0
+# 'Período2021.2': 7.0
 # }
 
 
@@ -69,6 +79,7 @@ def calculateCR(Data_base): #function to calculate the CR
     soma_notas = 0; #sum of the grades
     CR = {}
     periodos_cursados = [];
+    print(Data_base);
     for i in Data_base: #for each subject
         if(i != 'Nome' and i != 'Matrícula'): #if the subject is not the name or the registration number
             soma_pesos += Data_base[i]['Peso']; #add the weight to the sum
@@ -86,14 +97,219 @@ def calculateCR(Data_base): #function to calculate the CR
         CR['Período'+str(i)] = soma_notas/soma_pesos;
     return CR; #return the CR
 
-def plot(Date_base, CR):
-    #separa as matéria por período
+def plot(Date_base):
+    CR = calculateCR(Date_base);
+    #encontra quais são os períodos
     periodos = [];
     for i in Date_base:
         if(i != 'Nome' and i != 'Matrícula'):
             if Date_base[i]['Período'] not in periodos:
                 periodos.append(Date_base[i]['Período']);
+    #separa as matérias por período
+    materias = [];
+    for i in periodos: #para cada período
+        materias.append([]);#adiciono uma lista vazia no período
+    for i in Date_base: #para cada matéria
+        if(i != 'Nome' and i != 'Matrícula'):
+            for j in range(0, len(periodos)): #para cada período
+                if Date_base[i]['Período'] == periodos[j]:#se periodo da materia == periodo
+                    materias[j].append(i); #adiciono a matéria na lista desse período
+    #define space between the bars
+    peso_de_cada_barra = [];
+    for i in materias: #para cada período
+            peso_de_cada_barra.append([]); #adiciono uma lista vazia
+    for k in Data_base: #para cada matéria geral
+            if(k != 'Nome' and k != 'Matrícula'):
+                    for l in range(0, len(periodos)): #se o periodo é igual ao periodo[l];
+                     if( Data_base[k]['Período'] == periodos[l]):
+                        peso_de_cada_barra[l].append(Date_base[k]['Peso']);
+    space = [];
+    for i in range(0, len(peso_de_cada_barra)): #para cada periodo, adiciono uma lista
+        space.append([]);
+    for k in range(0, len(space)): #para cada periodo
+        soma = 0; #espaço inicial é zero inicialmente
+        for i in range(0, len(peso_de_cada_barra[k])): #para cada matéria
+                if(i == 0):#se for a primeira matéria
+                    space[k].append(peso_de_cada_barra[k][0]/2); #adiciono o peso da primeira matéria dividido por 2
+                    soma = peso_de_cada_barra[k][0] + 0.5;
+                else:
+                    soma = soma + peso_de_cada_barra[k][i]/2;
+                    space[k].append(soma);
+                    soma = soma + peso_de_cada_barra[k][i]/2 + 0.5;
+    #encontro nota de cada materia
+    notas = [];
+    pesos_individuais = [];
+    notas_individuais = [];
+    cores = [];
+    for i in range(0, len(materias)):
+        notas.append([]);
+        pesos_individuais.append([]);
+        notas_individuais.append([]);
+        cores.append([]);
+        for j in range(0,len(materias[i])):
+            pesos_individuais[i].append([]); #adiciono uma lista vazia
+            notas_individuais[i].append([]);
+            cores[i].append([]);
+            notas[i].append(Data_base[materias[i][j]]['Nota']);
+
+         #include the fist element of each avaliação in each materia inthe list pesos_individuais
+    for i in Data_base: #pra cada matéria 
+        if(i != 'Nome' and i != 'Matrícula'):
+            for j in Data_base[i]:
+                if (j != 'Peso' and j != 'Período' and j != 'Nota'):
+                    #até aqui selecionei quem são as avaliações: Data_base[i][j]
+                    for k in range(0, len(pesos_individuais)):
+                        for l in range(0, len(pesos_individuais[k])):
+                            #aqui cheguei na lista vazia de cada materia: pesos_individuais[k][l]
+                            if(i == materias[k][l]):
+                                pesos_individuais[k][l].append(Data_base[i][j][1]);
+                                notas_individuais[k][l].append(Data_base[i][j][0]);
+                                if Data_base[i][j][0] >= 7:
+                                    cores[k][l].append('green');
+                                elif Data_base[i][j][0] >= 6:
+                                    cores[k][l].append('yellow');
+                                else:
+                                    cores[k][l].append('red');
+                                
+    #PLOT PLOT PLOT PLOT PLOT
+
+    data_set = [];
+    for i in range(0, len(periodos)):
+        aux = [];
+        aux = [space[i], notas[i], peso_de_cada_barra[i]];
+        data_set.append(aux);
+    #plot the graphs
+    #plot two xy axis in the same plot
+    linhas = 0
+    if len(periodos) % 2 == 0:
+        linhas = len(periodos)/2;
+    else:
+        linhas = (len(periodos)+1)/2;
+    linhas = int(linhas);
+    fig, axs = plt.subplots(linhas,2);
+    fig.suptitle(Data_base['Nome']+'-'+str(Data_base['Matrícula']));
+    for i in range(0, len(periodos)):
+        a = int(floor(i/2));
+        b = int(i%2);
+        axs[a,b].bar(data_set[i][0], data_set[i][1], data_set[i][2]);
+        axs[a,b].set_title('Período '+str(periodos[i]));
+        axs[a,b].set_xticks(data_set[i][0], materias[i], rotation=45);
+        #limit the y axis
+        #show CR
+        axs[a,b].hlines(CR['Acumulado'], 0, 10, color='violet', linestyle='--');
+        axs[a,b].hlines(CR['Período'+str(periodos[i])], 0, 10, color='lightgreen', linestyle='--');
+        #show CR as label
+        #show CR in the left side and CR acumluda in the right side
+        #show legend with CR
+        axs[a,b].legend(['CR Acumulado', 'CR'+str(periodos[i])]);
+        #axs[a,b].text(0.5, 0.5, 'CR: '+str(round(CR['Acumulado'],2)), transform=axs[a,b].transAxes, color = 'blue');
+        #axs[a,b].text(0.5, 0.5, 'CR: '+str(round(CR['Período'+str(periodos[i])], 2)), transform=axs[a,b].transAxes, color = 'green');
+        axs[a,b].set_ylim(0,10);
+        axs[a,b].set_xlim(0,10);
+        for j in range(0, len(space[i])):
+                axs[a,b].text(space[i][j], notas[i][j], str(round(notas[i][j],2)), color='black', ha='center', va='bottom');
+        for j in range(0, len(pesos_individuais[i])):#pra cada materia
+            baixo = 0;
+            peso_por_materia  = 0;
+            for k in range(0, len(pesos_individuais[i][j])): #defino o peso total da disciplina
+                peso_por_materia += pesos_individuais[i][j][k]; 
+            for k in range(0, len(pesos_individuais[i][j])): #pra cada nota individual
+                axs[a,b].bar(space[i][j], pesos_individuais[i][j][k]*notas[i][j]/peso_por_materia, peso_de_cada_barra[i][j], bottom=baixo, color = cores[i][j][k]); 
+                if(k!=0):
+                    axs[a,b].plot([space[i][j]-peso_de_cada_barra[i][j]/2, space[i][j]+peso_de_cada_barra[i][j]/2], [baixo, baixo], color='white', linewidth=1.5)
+                    #axs[a,b].text(space[i][j], baixo, str(round(baixo, 2)), fontsize=15, color='black') 
+                baixo = baixo + pesos_individuais[i][j][k]*notas[i][j]/peso_por_materia;
+                    #    plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
+                # #plot the grades for each avaliation
+          #plot the grades for each avaliatio # 
+                #pesos_individuais[i][j][k] = pesos_individuais[i][j][k]/soma;
+                # #plot the grades for each avaliation
+                # plt.text(space[i], baixo, str(round(individual[i][j], 2)), fontsize=15, color='white') 
+                # baixo = baixo +   individual[i][j+1]*nota_materia[i]/pesospormateria;
+                # #plot line above rectangles
+                # plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
+                # #plot the grades for each avaliation
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
        
+        # individual = [];
+        # for i in range(0, len(materias)):
+        #     individual.append([]);
+        #     for j in range(0, len(materias[i])):
+        #         individual[i].append([]);
+        # for i in Data_base:
+        #     if i != 'Nome' and i != 'Matrícula':
+        #         for j in (Data_base[i]):
+        #             if j!= 'Periodo' and j!= 'Peso' and j!= 'Nota':
+        #                 for k in range(0, len(periodos))
+        #                     if Data_base[i]['Período'] == periodos[j]:
+        #                         individual[j].append(Data_base[i]['Nota']);
+        #                         individual[j].append(Data_base[i]['Peso']);
+        # for i in range(0,len(individual)):
+        # baixo = 0;
+        # pesospormateria = 0;
+        # for j in range(0, len(individual[i])):
+        #     if(j%2 == 0):
+        #         pesospormateria += individual[i][j+1];
+        # cores='';
+        # for j in range(0, len(individual[i])):
+        #     if(j%2==0):
+        #         if(individual[i][j] < 6):
+        #             cores = 'r';
+        #         elif(individual[i][j] < 7):
+        #             cores = 'y';
+        #         else:
+        #             cores = 'g';
+        #         plt.bar(space[i], individual[i][j+1]*nota_materia[i]/pesospormateria, weights_materia[i], bottom=baixo, color=cores); 
+        #         #plot the grades for each avaliation
+        #         plt.text(space[i], baixo, str(round(individual[i][j], 2)), fontsize=15, color='white') 
+        #         baixo = baixo +   individual[i][j+1]*nota_materia[i]/pesospormateria;
+        #         #plot line above rectangles
+        #         plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
+        #         #plot the grades for each avaliation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    fig.tight_layout()
+    plt.show();
+
+
+
+    
+ 
+
 
 
 
@@ -123,7 +339,7 @@ def plot(Date_base, CR):
 
 #chamar função findmaterias
 Data_base = build(matricula_aluno, arq);
-CR = calculateCR(Data_base);
+plot(Data_base);
 
 
 # #PESOS DAS MATERIAS
