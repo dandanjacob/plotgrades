@@ -6,7 +6,6 @@ import openpyxl
 from math import floor
 arq = openpyxl.load_workbook('planilhas.xlsx') 
 matricula_aluno = int(67106); #matricula do aluno
-
 #Estrutura do arquivo xlsx
 #Geral: Identificação | Professor | Período | Peso | Matéria
 #'Nome_d_matéria': Matrícula | Nome | Avaliação 1 | Peso A1 | Avaliação 2 | Peso A2...
@@ -165,9 +164,9 @@ def plot(Date_base):
                                 pesos_individuais[k][l].append(Data_base[i][j][1]);
                                 notas_individuais[k][l].append(Data_base[i][j][0]);
                                 if Data_base[i][j][0] >= 7:
-                                    cores[k][l].append('green');
+                                    cores[k][l].append('forestgreen');
                                 elif Data_base[i][j][0] >= 6:
-                                    cores[k][l].append('yellow');
+                                    cores[k][l].append('gold');
                                 else:
                                     cores[k][l].append('red');
                                 
@@ -198,14 +197,17 @@ def plot(Date_base):
         #show CR
         axs[a,b].hlines(CR['Acumulado'], 0, 10, color='violet', linestyle='--');
         axs[a,b].hlines(CR['Período'+str(periodos[i])], 0, 10, color='lightgreen', linestyle='--');
+        axs[a,b].hlines(6, 0, 10, color='silver', linestyle='-', linewidth=1);
         #show CR as label
         #show CR in the left side and CR acumluda in the right side
         #show legend with CR
-        axs[a,b].legend(['CR Acumulado', 'CR'+str(periodos[i])]);
+        print(str(round(CR['Acumulado'])));
+        axs[a,b].legend(['CR A: '+str(round(CR['Acumulado'], 2)), 'CR P.: '+str(round(CR['Período'+str(periodos[i])], 2))]);
         #axs[a,b].text(0.5, 0.5, 'CR: '+str(round(CR['Acumulado'],2)), transform=axs[a,b].transAxes, color = 'blue');
         #axs[a,b].text(0.5, 0.5, 'CR: '+str(round(CR['Período'+str(periodos[i])], 2)), transform=axs[a,b].transAxes, color = 'green');
         axs[a,b].set_ylim(0,10);
         axs[a,b].set_xlim(0,10);
+        axs[a,b].set_yticks([6,10], ['6','10']);
         for j in range(0, len(space[i])):
                 axs[a,b].text(space[i][j], notas[i][j], str(round(notas[i][j],2)), color='black', ha='center', va='bottom');
         for j in range(0, len(pesos_individuais[i])):#pra cada materia
@@ -216,239 +218,29 @@ def plot(Date_base):
             for k in range(0, len(pesos_individuais[i][j])): #pra cada nota individual
                 axs[a,b].bar(space[i][j], pesos_individuais[i][j][k]*notas[i][j]/peso_por_materia, peso_de_cada_barra[i][j], bottom=baixo, color = cores[i][j][k]); 
                 if(k!=0):
-                    axs[a,b].plot([space[i][j]-peso_de_cada_barra[i][j]/2, space[i][j]+peso_de_cada_barra[i][j]/2], [baixo, baixo], color='white', linewidth=1.5)
-                    #axs[a,b].text(space[i][j], baixo, str(round(baixo, 2)), fontsize=15, color='black') 
+                    axs[a,b].plot([space[i][j]-peso_de_cada_barra[i][j]/2, space[i][j]+peso_de_cada_barra[i][j]/2], [baixo, baixo], color='white', linewidth=1.5) 
                 baixo = baixo + pesos_individuais[i][j][k]*notas[i][j]/peso_por_materia;
-                    #    plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
-                # #plot the grades for each avaliation
-          #plot the grades for each avaliatio # 
-                #pesos_individuais[i][j][k] = pesos_individuais[i][j][k]/soma;
-                # #plot the grades for each avaliation
-                # plt.text(space[i], baixo, str(round(individual[i][j], 2)), fontsize=15, color='white') 
-                # baixo = baixo +   individual[i][j+1]*nota_materia[i]/pesospormateria;
-                # #plot line above rectangles
-                # plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
-                # #plot the grades for each avaliation
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-        # individual = [];
-        # for i in range(0, len(materias)):
-        #     individual.append([]);
-        #     for j in range(0, len(materias[i])):
-        #         individual[i].append([]);
-        # for i in Data_base:
-        #     if i != 'Nome' and i != 'Matrícula':
-        #         for j in (Data_base[i]):
-        #             if j!= 'Periodo' and j!= 'Peso' and j!= 'Nota':
-        #                 for k in range(0, len(periodos))
-        #                     if Data_base[i]['Período'] == periodos[j]:
-        #                         individual[j].append(Data_base[i]['Nota']);
-        #                         individual[j].append(Data_base[i]['Peso']);
-        # for i in range(0,len(individual)):
-        # baixo = 0;
-        # pesospormateria = 0;
-        # for j in range(0, len(individual[i])):
-        #     if(j%2 == 0):
-        #         pesospormateria += individual[i][j+1];
-        # cores='';
-        # for j in range(0, len(individual[i])):
-        #     if(j%2==0):
-        #         if(individual[i][j] < 6):
-        #             cores = 'r';
-        #         elif(individual[i][j] < 7):
-        #             cores = 'y';
-        #         else:
-        #             cores = 'g';
-        #         plt.bar(space[i], individual[i][j+1]*nota_materia[i]/pesospormateria, weights_materia[i], bottom=baixo, color=cores); 
-        #         #plot the grades for each avaliation
-        #         plt.text(space[i], baixo, str(round(individual[i][j], 2)), fontsize=15, color='white') 
-        #         baixo = baixo +   individual[i][j+1]*nota_materia[i]/pesospormateria;
-        #         #plot line above rectangles
-        #         plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
-        #         #plot the grades for each avaliation
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     fig.tight_layout()
     plt.show();
 
+def on_add(sel):
+    x, y, width, height = sel.artist[sel.target.index].get_bbox().bounds
+    sel.annotation.set(text=f"OI",
+                       position=(10, 0), anncoords="offset points")
+    sel.annotation.xy = (x + width / 2, y + height / 2)
+    sel.annotation.get_bbox_patch().set(alpha=0.8)
 
 
-    
- 
 
+#define the function to show alaviations for each bar
+#@cursor.connect("add")
+# def on_add(sel):
+#     x, y, width, height = sel.artist[sel.target.index].get_bbox().bounds
+#     sel.annotation.set(text=f"{x_axis[sel.target.index]}: {width:g}",
+#                        position=(10, 0), anncoords="offset points")
+#     sel.annotation.xy = (x + width / 2, y + height / 2)
+#     sel.annotation.get_bbox_patch().set(alpha=0.8) 
 
-
-
-
-
-# for i in range(1, len(arq.sheetnames)): #for each planilha in the xlsx document
-#         planilha = pd.read_excel('planilhas.xlsx', sheet_name=i) #read the planilha
-#         for j in range(0, len(planilha)-1): #forline in planilha
-#             if(planilha.iloc[j, 0] == matricula_aluno): #if matricula_aluno is in the planilha
-#                 nome_materia.append(arq.sheetnames[i]); #add the name of the materia in the list
-#             nota_final = 0;
-#             soma_pesos = 0;
-#             weightPgrades = [];
-#             for k in range(2, (len(planilha.columns))): #for each avaliation in planilha
-#                     weightPgrades.append(planilha.iloc[j, k]); 
-#                     if (k % 2 == 0): #if the column is a weight
-#                         soma_pesos = soma_pesos + planilha.iloc[j, k+1]; #sum the weights_materia
-#                         nota_final = nota_final + planilha.iloc[j,k]*planilha.iloc[j,k+1]; #add the nota * peso
-#             individual.append(weightPgrades); #add list of avaliations in the list
-#             nota_materia.append(nota_final/soma_pesos); #add the nota_final of the materia in the list
-#             break;
-################################
- #We have the name of the materia and the nota of the materia,
- # so height of the bar and how many bar there is
-################################
-
-
-#chamar função findmaterias
+#chamar função build
 Data_base = build(matricula_aluno, arq);
 plot(Data_base);
-
-
-# #PESOS DAS MATERIAS
-# #defining the weights_materia of the bars
-# weights_materia = [];
-# planilha = pd.read_excel('planilhas.xlsx', sheet_name='Geral');
-# for i in range(0, len(nome_materia)):
-#     for j in range(0, len(planilha)):
-#         if(planilha.iloc[j, 0] == nome_materia[i]):
-#             weights_materia.append(planilha.iloc[j, 2]);
-  
-
-
-# #CR DO PERÍODO
-# #media ponderada de weighs e nota_materia
-# media_ponderada = 0;
-# for i in range(0, len(weights_materia)):
-#     media_ponderada += weights_materia[i]*nota_materia[i];
-# media_ponderada = media_ponderada/sum(weights_materia);
-
-
-
-
-# #define space between bars
-# space = [];
-# acumulado = 0;
-# space_around = 0.1;
-# for i in range(0, len(weights_materia)):
-#     if(i==0):
-#         space.append(0.5*weights_materia[i] + space_around);
-#         acumulado = acumulado + weights_materia[i] + space_around;
-#     else:
-#         space.append(acumulado + weights_materia[i]*0.5 + space_around);
-#         acumulado = acumulado + weights_materia[i]+ space_around;
-
-# #PERÍODO
-# #extracting numbers from a nome_materia
-# periodo = '';
-# p = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.'];
-# for i in range(0, len(nome_materia[0])):
-#     if(nome_materia[0][i] in p):
-#         periodo = periodo + nome_materia[0][i];
-
-
-# #NOME DA MATÉRIA
-# #deleting numbers and symbols in nome_materia
-# for i in range(0, len(nome_materia)):
-#     nome_materia[i] = nome_materia[i].replace("1", "");
-#     nome_materia[i] = nome_materia[i].replace("2", "");
-#     nome_materia[i] = nome_materia[i].replace("3", "");
-#     nome_materia[i] = nome_materia[i].replace("4", "");
-#     nome_materia[i] = nome_materia[i].replace("5", "");
-#     nome_materia[i] = nome_materia[i].replace("6", "");
-#     nome_materia[i] = nome_materia[i].replace("7", "");
-#     nome_materia[i] = nome_materia[i].replace("8", "");
-#     nome_materia[i] = nome_materia[i].replace("9", "");
-#     nome_materia[i] = nome_materia[i].replace("0", "");
-#     nome_materia[i] = nome_materia[i].replace("-", "");
-#     nome_materia[i] = nome_materia[i].replace(".", "");
-
-# # plot a histogram
-# plt.bar(space, nota_materia, weights_materia);
-# plt.yticks([]);
-# plt.xticks([]);
-# plt.xticks(space, nome_materia);
-# plt.title(periodo)
-# #add a vertical line in the mean of the notas
-# #to slope xticks 
-# plt.xticks(rotation=45);
-
-
-
-# #LINHA NOTA MÍNIMA 6 E NOTA MÁXIMA 10
-# plt.axhline(6, color='b', linestyle='dashed', linewidth=1)
-# plt.axhline(10, color='black', linestyle='solid', linewidth=1)
-# plt.axhline(media_ponderada, color='g', linestyle='dashed', linewidth=1)
-# #plot media_ponderada in the y axis
-# plt.text(0, media_ponderada, 'CR: ' + str(round(media_ponderada, 2)), fontsize=6, color='g')
-# plt.text(0, 6, str(6), fontsize=6, color='b')
-
-
-# for i in range(0,len(individual)):
-#     baixo = 0;
-#     pesospormateria = 0;
-#     for j in range(0, len(individual[i])):
-#         if(j%2 == 0):
-#             pesospormateria += individual[i][j+1];
-#     cores='';
-#     for j in range(0, len(individual[i])):
-#         if(j%2==0):
-#             if(individual[i][j] < 6):
-#                 cores = 'r';
-#             elif(individual[i][j] < 7):
-#                 cores = 'y';
-#             else:
-#                 cores = 'g';
-#             plt.bar(space[i], individual[i][j+1]*nota_materia[i]/pesospormateria, weights_materia[i], bottom=baixo, color=cores); 
-#             #plot the grades for each avaliation
-#             plt.text(space[i], baixo, str(round(individual[i][j], 2)), fontsize=15, color='white') 
-#             baixo = baixo +   individual[i][j+1]*nota_materia[i]/pesospormateria;
-#             #plot line above rectangles
-#             plt.plot([space[i]-weights_materia[i]*0.5, space[i]+weights_materia[i]*0.5], [baixo, baixo], color='white', linewidth=1.5)
-#             #plot the grades for each avaliation
-
-
-
-
-
-# plt.show();
-
-
-
